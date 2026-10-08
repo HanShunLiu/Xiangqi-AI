@@ -11,11 +11,6 @@ for r in range(10):
     for c in range(9):
         POS_TBL[ROW[r]+COL[c]] = (SQ_WIDTH * (c+1) + c, SQ_WIDTH * (r+1) + r)
 
-DIAG_POS = [[POS_TBL["J4"], POS_TBL["H6"]], [POS_TBL["J6"], POS_TBL["H4"]],
-            [POS_TBL["C4"], POS_TBL["A6"]], [POS_TBL["C6"], POS_TBL["A4"]]]
-MARK_LOC = [POS_TBL["H2"], POS_TBL["H8"], POS_TBL["G1"], POS_TBL["G3"], POS_TBL["G5"], POS_TBL["G7"], POS_TBL["G9"],
-            POS_TBL["C2"], POS_TBL["C8"], POS_TBL["D1"], POS_TBL["D3"], POS_TBL["D5"], POS_TBL["D7"], POS_TBL["D9"]]
-
 # States
 BOARD_STATE = {
     "RR1" : "J1",  # Red Chariot (Rook) 1
@@ -88,16 +83,29 @@ BS_PNG = pygame.image.load("./asset/B_Soldier.png").convert_alpha()
 
 # Renders board background
 def render_board():
-    pygame.draw.rect(screen, CLR_BoardBg, (0, 0, SQ_WIDTH * 10 + 9, SQ_WIDTH * 11 + 10))                         # Board background
-    pygame.draw.rect(screen, CLR_Outline, (SQ_WIDTH, SQ_WIDTH, SQ_WIDTH * 8 + 9, SQ_WIDTH * 9 + 10))             # Board outline
-    for r in ["J", "I", "H", "G", "E", "D", "C", "B"]:                                                           # Squares
+    # Board Background
+    pygame.draw.rect(screen, CLR_BoardBg, (0, 0, SQ_WIDTH * 10 + 9, SQ_WIDTH * 11 + 10))
+
+    # Board Outline
+    pygame.draw.rect(screen, CLR_Outline, (SQ_WIDTH, SQ_WIDTH, SQ_WIDTH * 8 + 9, SQ_WIDTH * 9 + 10))
+
+    # Grid
+    for r in ["J", "I", "H", "G", "E", "D", "C", "B"]:
         for c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
             pos = POS_TBL[r+c]
             pygame.draw.rect(screen, CLR_BoardSq, (pos[0]+1, pos[1]+1, SQ_WIDTH, SQ_WIDTH))
-    pygame.draw.rect(screen, CLR_BoardSq, (POS_TBL["F1"][0]+1, POS_TBL["F1"][1]+1, SQ_WIDTH * 8 + 7, SQ_WIDTH))  # River
-    for pos in DIAG_POS:                                                                                         # Palaces
+    
+    # River
+    pygame.draw.rect(screen, CLR_BoardSq, (POS_TBL["F1"][0]+1, POS_TBL["F1"][1]+1, SQ_WIDTH * 8 + 7, SQ_WIDTH))
+
+    # Palace
+    for pos in [[POS_TBL["J4"], POS_TBL["H6"]], [POS_TBL["J6"], POS_TBL["H4"]], 
+                [POS_TBL["C4"], POS_TBL["A6"]], [POS_TBL["C6"], POS_TBL["A4"]]]:
         pygame.draw.line(screen, CLR_Outline, pos[0], pos[1], width=1)
-    for pos in MARK_LOC:                                                                                         # Marks
+    
+    # Marks
+    for pos in [POS_TBL["H2"], POS_TBL["H8"], POS_TBL["G1"], POS_TBL["G3"], POS_TBL["G5"], POS_TBL["G7"], POS_TBL["G9"],
+                POS_TBL["C2"], POS_TBL["C8"], POS_TBL["D1"], POS_TBL["D3"], POS_TBL["D5"], POS_TBL["D7"], POS_TBL["D9"]]:
         x = SQ_WIDTH // 5
         y = SQ_WIDTH // 15
         if pos[0] > SQ_WIDTH:
