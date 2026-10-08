@@ -4,40 +4,58 @@ import pygame
 SQ_WIDTH = 50
 UI_WIDTH = 100
 
-SQ_LOC = []
-for i in range(1, 9):
-    for j in range(1, 10):
-        SQ_LOC.append((SQ_WIDTH * i + i, SQ_WIDTH * j + j))
-DIAG_LOC = [[(SQ_WIDTH * 4 + 3, SQ_WIDTH * 1 + 0), (SQ_WIDTH * 6 + 5, SQ_WIDTH *  3 + 2)], 
-            [(SQ_WIDTH * 6 + 5, SQ_WIDTH * 1 + 0), (SQ_WIDTH * 4 + 3, SQ_WIDTH *  3 + 2)], 
-            [(SQ_WIDTH * 4 + 3, SQ_WIDTH * 8 + 7), (SQ_WIDTH * 6 + 5, SQ_WIDTH * 10 + 9)], 
-            [(SQ_WIDTH * 6 + 5, SQ_WIDTH * 8 + 7), (SQ_WIDTH * 4 + 3, SQ_WIDTH * 10 + 9)]]
-MARK_LOC = [[(SQ_WIDTH * 2 + 1, SQ_WIDTH * 3 + 2), 0], [(SQ_WIDTH * 8 + 7, SQ_WIDTH * 3 + 2), 0],
-            [(SQ_WIDTH * 1 + 0, SQ_WIDTH * 4 + 3), 2], [(SQ_WIDTH * 3 + 2, SQ_WIDTH * 4 + 3), 0],
-            [(SQ_WIDTH * 5 + 4, SQ_WIDTH * 4 + 3), 0], [(SQ_WIDTH * 7 + 6, SQ_WIDTH * 4 + 3), 0], 
-            [(SQ_WIDTH * 9 + 8, SQ_WIDTH * 4 + 3), 1], [(SQ_WIDTH * 1 + 0, SQ_WIDTH * 7 + 6), 2], 
-            [(SQ_WIDTH * 3 + 2, SQ_WIDTH * 7 + 6), 0], [(SQ_WIDTH * 5 + 4, SQ_WIDTH * 7 + 6), 0], 
-            [(SQ_WIDTH * 7 + 6, SQ_WIDTH * 7 + 6), 0], [(SQ_WIDTH * 9 + 8, SQ_WIDTH * 7 + 6), 1],
-            [(SQ_WIDTH * 2 + 1, SQ_WIDTH * 8 + 7), 0], [(SQ_WIDTH * 8 + 7, SQ_WIDTH * 8 + 7), 0]]
+ROW = ["J", "I", "H", "G", "F", "E", "D", "C", "B", "A"]
+COL = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+POS_TBL = {}
+for r in range(10):
+    for c in range(9):
+        POS_TBL[ROW[r]+COL[c]] = (SQ_WIDTH * (c+1) + c, SQ_WIDTH * (r+1) + r)
 
-PIECE_LOC_NAME = ["J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9",
-                  "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8", "I9",
-                  "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9",
-                  "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9",
-                  "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9",
-                  "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9",
-                  "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9",
-                  "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9",
-                  "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9",
-                  "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"]
+DIAG_POS = [[POS_TBL["J4"], POS_TBL["H6"]], [POS_TBL["J6"], POS_TBL["H4"]],
+            [POS_TBL["C4"], POS_TBL["A6"]], [POS_TBL["C6"], POS_TBL["A4"]]]
+MARK_LOC = [POS_TBL["H2"], POS_TBL["H8"], POS_TBL["G1"], POS_TBL["G3"], POS_TBL["G5"], POS_TBL["G7"], POS_TBL["G9"],
+            POS_TBL["C2"], POS_TBL["C8"], POS_TBL["D1"], POS_TBL["D3"], POS_TBL["D5"], POS_TBL["D7"], POS_TBL["D9"]]
 
-CORD_DICT = {}
-for j in range(10):
-    for i in range(9):
-        x = SQ_WIDTH * (i+1) + i
-        y = SQ_WIDTH * (j+1) + j
-        index = j * 9 + i
-        CORD_DICT[PIECE_LOC_NAME[index]] = (x, y)
+# States
+BOARD_STATE = {
+    "RR1" : "J1",  # Red Chariot (Rook) 1
+    "RH1" : "J2",  # Red Horse 1
+    "RE1" : "J3",  # Red Elephant 1
+    "RA1" : "J4",  # Red Advisor 1
+    "RG_" : "J5",  # Red General
+    "RA2" : "J6",  # Red Advisor 2
+    "RE2" : "J7",  # Red Elephant 2
+    "RH2" : "J8",  # Red Horse 2
+    "RR2" : "J9",  # Red Chariot (Rook) 2
+
+    "RC1" : "H2",  # Red Cannon 1
+    "RC2" : "H8",  # Red Cannon 2
+
+    "RS1" : "G1",  # Red Soldier 1
+    "RS2" : "G3",  # Red Soldier 2
+    "RS3" : "G5",  # Red Soldier 3
+    "RS4" : "G7",  # Red Soldier 4
+    "RS5" : "G9",  # Red Soldier 5
+
+    "BS1" : "D1",  # Black Soldier 1
+    "BS2" : "D3",  # Black Soldier 2
+    "BS3" : "D5",  # Black Soldier 3
+    "BS4" : "D7",  # Black Soldier 4
+    "BS5" : "D9",  # Black Soldier 5
+
+    "BC1" : "C2",  # Black Cannon 1
+    "BC2" : "C8",  # Black Cannon 2
+
+    "BR1" : "A1",  # Black Chariot (Rook) 1
+    "BH1" : "A2",  # Black Horse 1
+    "BE1" : "A3",  # Black Elephant 1
+    "BA1" : "A4",  # Black Advisor 1
+    "BG_" : "A5",  # Black General
+    "BA2" : "A6",  # Black Advisor 2
+    "BE2" : "A7",  # Black Elephant 2
+    "BH2" : "A8",  # Black Horse 2
+    "BR2" : "A9",  # Black Chariot (Rook) 2
+}
 
 # Colors
 CLR_GameBg  = (255, 255, 255)
@@ -45,53 +63,66 @@ CLR_BoardBg = (206,  92,   0)
 CLR_BoardSq = (252, 175,  62)
 CLR_Outline = (  0,   0,   0)
 
-# pygame setup
+# Pygame Setup
 pygame.init()
 screen = pygame.display.set_mode((SQ_WIDTH * 10 + 9 + UI_WIDTH, SQ_WIDTH * 11 + 10))
 clock = pygame.time.Clock()
 running = True
 
-# Pieces
-B_General  = pygame.image.load("./asset/B_General.png").convert_alpha()
-B_Advisor  = pygame.image.load("./asset/B_Advisor.png").convert_alpha()
-B_Elephant = pygame.image.load("./asset/B_Elephant.png").convert_alpha()
-B_Horse    = pygame.image.load("./asset/B_Horse.png").convert_alpha()
-B_Chariot  = pygame.image.load("./asset/B_Chariot.png").convert_alpha()
-B_Cannon   = pygame.image.load("./asset/B_Cannon.png").convert_alpha()
-B_Soldier  = pygame.image.load("./asset/B_Soldier.png").convert_alpha()
+# Load Assets
+RG_PNG = pygame.image.load("./asset/R_General.png").convert_alpha()
+RA_PNG = pygame.image.load("./asset/R_Advisor.png").convert_alpha()
+RE_PNG = pygame.image.load("./asset/R_Elephant.png").convert_alpha()
+RH_PNG = pygame.image.load("./asset/R_Horse.png").convert_alpha()
+RR_PNG = pygame.image.load("./asset/R_Chariot.png").convert_alpha()
+RC_PNG = pygame.image.load("./asset/R_Cannon.png").convert_alpha()
+RS_PNG = pygame.image.load("./asset/R_Soldier.png").convert_alpha()
 
-R_General  = pygame.image.load("./asset/R_General.png").convert_alpha()
-R_Advisor  = pygame.image.load("./asset/R_Advisor.png").convert_alpha()
-R_Elephant = pygame.image.load("./asset/R_Elephant.png").convert_alpha()
-R_Horse    = pygame.image.load("./asset/R_Horse.png").convert_alpha()
-R_Chariot  = pygame.image.load("./asset/R_Chariot.png").convert_alpha()
-R_Cannon   = pygame.image.load("./asset/R_Cannon.png").convert_alpha()
-R_Soldier  = pygame.image.load("./asset/R_Soldier.png").convert_alpha()
+BG_PNG = pygame.image.load("./asset/B_General.png").convert_alpha()
+BA_PNG = pygame.image.load("./asset/B_Advisor.png").convert_alpha()
+BE_PNG = pygame.image.load("./asset/B_Elephant.png").convert_alpha()
+BH_PNG = pygame.image.load("./asset/B_Horse.png").convert_alpha()
+BR_PNG = pygame.image.load("./asset/B_Chariot.png").convert_alpha()
+BC_PNG = pygame.image.load("./asset/B_Cannon.png").convert_alpha()
+BS_PNG = pygame.image.load("./asset/B_Soldier.png").convert_alpha()
 
-def render_board(screen):
-    pygame.draw.rect(screen, CLR_BoardBg, (0, 0, SQ_WIDTH * 10 + 9, SQ_WIDTH * 11 + 10))              # Board background
-    pygame.draw.rect(screen, CLR_Outline, (SQ_WIDTH, SQ_WIDTH, SQ_WIDTH * 8 + 9, SQ_WIDTH * 9 + 10))  # Board outline
-    for loc in SQ_LOC:                                                                                # Squares
-        pygame.draw.rect(screen, CLR_BoardSq, (loc[0], loc[1], SQ_WIDTH, SQ_WIDTH))
-    pygame.draw.rect(screen, CLR_BoardSq, (SQ_LOC[4][0], SQ_LOC[4][1], SQ_WIDTH * 8 + 7, SQ_WIDTH))   # River
-    for loc in DIAG_LOC:                                                                              # Palaces
-        pygame.draw.line(screen, CLR_Outline, loc[0], loc[1], width=1)
-    for loc, t in MARK_LOC:                                                                           # Marks
-        if t == 0 or t == 1:
-            pygame.draw.line(screen, CLR_Outline, (loc[0] - 10, loc[1] -  3), (loc[0] - 3, loc[1] - 3), width=1)
-            pygame.draw.line(screen, CLR_Outline, (loc[0] -  3, loc[1] - 10), (loc[0] - 3, loc[1] - 3), width=1)
-            pygame.draw.line(screen, CLR_Outline, (loc[0] - 10, loc[1] +  3), (loc[0] - 3, loc[1] + 3), width=1)
-            pygame.draw.line(screen, CLR_Outline, (loc[0] -  3, loc[1] + 10), (loc[0] - 3, loc[1] + 3), width=1)
-        if t == 0 or t == 2:
-            pygame.draw.line(screen, CLR_Outline, (loc[0] + 10, loc[1] -  3), (loc[0] + 3, loc[1] - 3), width=1)
-            pygame.draw.line(screen, CLR_Outline, (loc[0] +  3, loc[1] - 10), (loc[0] + 3, loc[1] - 3), width=1)
-            pygame.draw.line(screen, CLR_Outline, (loc[0] + 10, loc[1] +  3), (loc[0] + 3, loc[1] + 3), width=1)
-            pygame.draw.line(screen, CLR_Outline, (loc[0] +  3, loc[1] + 10), (loc[0] + 3, loc[1] + 3), width=1)
+# Renders board background
+def render_board():
+    pygame.draw.rect(screen, CLR_BoardBg, (0, 0, SQ_WIDTH * 10 + 9, SQ_WIDTH * 11 + 10))                         # Board background
+    pygame.draw.rect(screen, CLR_Outline, (SQ_WIDTH, SQ_WIDTH, SQ_WIDTH * 8 + 9, SQ_WIDTH * 9 + 10))             # Board outline
+    for r in ["J", "I", "H", "G", "E", "D", "C", "B"]:                                                           # Squares
+        for c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+            pos = POS_TBL[r+c]
+            pygame.draw.rect(screen, CLR_BoardSq, (pos[0]+1, pos[1]+1, SQ_WIDTH, SQ_WIDTH))
+    pygame.draw.rect(screen, CLR_BoardSq, (POS_TBL["F1"][0]+1, POS_TBL["F1"][1]+1, SQ_WIDTH * 8 + 7, SQ_WIDTH))  # River
+    for pos in DIAG_POS:                                                                                         # Palaces
+        pygame.draw.line(screen, CLR_Outline, pos[0], pos[1], width=1)
+    for pos in MARK_LOC:                                                                                         # Marks
+        x = SQ_WIDTH // 5
+        y = SQ_WIDTH // 15
+        if pos[0] > SQ_WIDTH:
+            pygame.draw.line(screen, CLR_Outline, (pos[0] - x, pos[1] - y), (pos[0] - y, pos[1] - y), width=1)
+            pygame.draw.line(screen, CLR_Outline, (pos[0] - y, pos[1] - x), (pos[0] - y, pos[1] - y), width=1)
+            pygame.draw.line(screen, CLR_Outline, (pos[0] - x, pos[1] + y), (pos[0] - y, pos[1] + y), width=1)
+            pygame.draw.line(screen, CLR_Outline, (pos[0] - y, pos[1] + x), (pos[0] - y, pos[1] + y), width=1)
+        if pos[0] < SQ_WIDTH * 9 + 8:
+            pygame.draw.line(screen, CLR_Outline, (pos[0] + x, pos[1] - y), (pos[0] + y, pos[1] - y), width=1)
+            pygame.draw.line(screen, CLR_Outline, (pos[0] + y, pos[1] - x), (pos[0] + y, pos[1] - y), width=1)
+            pygame.draw.line(screen, CLR_Outline, (pos[0] + x, pos[1] + y), (pos[0] + y, pos[1] + y), width=1)
+            pygame.draw.line(screen, CLR_Outline, (pos[0] + y, pos[1] + x), (pos[0] + y, pos[1] + y), width=1)
 
-def render_piece(screen, piece, c):
+# Renders all pieces based on board state
+def render_pieces():
     piece_width = int(SQ_WIDTH * 0.8) if int(SQ_WIDTH * 0.8) % 2 == 1 else int(SQ_WIDTH * 0.8) + 1
-    pygame.draw.ellipse(screen, CLR_Outline, (c[0] - piece_width // 2, c[1] - piece_width // 2, piece_width, piece_width))
-    screen.blit(pygame.transform.smoothscale(piece, (piece_width - 2, piece_width - 2)), (c[0] - piece_width // 2 + 1, c[1] - piece_width // 2 + 1))
+    for piece in BOARD_STATE:
+        pos_key = BOARD_STATE[piece]
+        if pos_key != "":
+            pos = POS_TBL[pos_key]
+            pygame.draw.ellipse(screen, CLR_Outline, (pos[0] - piece_width // 2, pos[1] - piece_width // 2, piece_width, piece_width))
+            screen.blit(
+                pygame.transform.smoothscale(globals()[piece[0:2] + "_PNG"], (piece_width - 2, piece_width - 2)), 
+                (pos[0] - piece_width // 2 + 1, pos[1] - piece_width // 2 + 1)
+            )
 
 while running:
     # Get events
@@ -99,51 +130,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Draw screen
+    # Render screen
     screen.fill(CLR_GameBg)
-    render_board(screen)
+    render_board()
+    render_pieces()
 
-    # Temp hardcoded placements
-    render_piece(screen, R_Chariot , CORD_DICT["J1"])
-    render_piece(screen, R_Horse   , CORD_DICT["J2"])
-    render_piece(screen, R_Elephant, CORD_DICT["J3"])
-    render_piece(screen, R_Advisor , CORD_DICT["J4"])
-    render_piece(screen, R_General , CORD_DICT["J5"])
-    render_piece(screen, R_Advisor , CORD_DICT["J6"])
-    render_piece(screen, R_Elephant, CORD_DICT["J7"])
-    render_piece(screen, R_Horse   , CORD_DICT["J8"])
-    render_piece(screen, R_Chariot , CORD_DICT["J9"])
-
-    render_piece(screen, R_Cannon  , CORD_DICT["H2"])
-    render_piece(screen, R_Cannon  , CORD_DICT["H8"])
-
-    render_piece(screen, R_Soldier , CORD_DICT["G1"])
-    render_piece(screen, R_Soldier , CORD_DICT["G3"])
-    render_piece(screen, R_Soldier , CORD_DICT["G5"])
-    render_piece(screen, R_Soldier , CORD_DICT["G7"])
-    render_piece(screen, R_Soldier , CORD_DICT["G9"])
-
-    render_piece(screen, B_Soldier , CORD_DICT["D1"])
-    render_piece(screen, B_Soldier , CORD_DICT["D3"])
-    render_piece(screen, B_Soldier , CORD_DICT["D5"])
-    render_piece(screen, B_Soldier , CORD_DICT["D7"])
-    render_piece(screen, B_Soldier , CORD_DICT["D9"])
-
-    render_piece(screen, B_Cannon  , CORD_DICT["C2"])
-    render_piece(screen, B_Cannon  , CORD_DICT["C8"])
-
-    render_piece(screen, B_Chariot , CORD_DICT["A1"])
-    render_piece(screen, B_Horse   , CORD_DICT["A2"])
-    render_piece(screen, B_Elephant, CORD_DICT["A3"])
-    render_piece(screen, B_Advisor , CORD_DICT["A4"])
-    render_piece(screen, B_General , CORD_DICT["A5"])
-    render_piece(screen, B_Advisor , CORD_DICT["A6"])
-    render_piece(screen, B_Elephant, CORD_DICT["A7"])
-    render_piece(screen, B_Horse   , CORD_DICT["A8"])
-    render_piece(screen, B_Chariot , CORD_DICT["A9"])
-
+    # Refresh screen
     pygame.display.flip()
-
     clock.tick(60)
 
 pygame.quit()
