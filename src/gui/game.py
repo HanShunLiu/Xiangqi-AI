@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # Constants
 SQ_WIDTH = 50
@@ -52,6 +53,8 @@ BOARD_STATE = {
     "BR2" : "A9",  # Black Chariot (Rook) 2
 }
 
+MOUSE_STATE = ""  # empty string : IDLE, non-empty string: SELECT
+
 # Colors
 CLR_GameBg  = (255, 255, 255)
 CLR_BoardBg = (206,  92,   0)
@@ -80,6 +83,9 @@ BH_PNG = pygame.image.load("./asset/B_Horse.png").convert_alpha()
 BR_PNG = pygame.image.load("./asset/B_Chariot.png").convert_alpha()
 BC_PNG = pygame.image.load("./asset/B_Cannon.png").convert_alpha()
 BS_PNG = pygame.image.load("./asset/B_Soldier.png").convert_alpha()
+
+# IDK where to put these
+piece_width = int(SQ_WIDTH * 0.8) if int(SQ_WIDTH * 0.8) % 2 == 1 else int(SQ_WIDTH * 0.8) + 1
 
 # Renders board background
 def render_board():
@@ -121,7 +127,6 @@ def render_board():
 
 # Renders all pieces based on board state
 def render_pieces():
-    piece_width = int(SQ_WIDTH * 0.8) if int(SQ_WIDTH * 0.8) % 2 == 1 else int(SQ_WIDTH * 0.8) + 1
     for piece in BOARD_STATE:
         pos_key = BOARD_STATE[piece]
         if pos_key != "":
@@ -132,9 +137,33 @@ def render_pieces():
                 (pos[0] - piece_width // 2 + 1, pos[1] - piece_width // 2 + 1)
             )
 
+def move_piece(piece, pos):
+    for p in BOARD_STATE:
+        if p != piece and BOARD_STATE[p] == pos:
+            BOARD_STATE[p] = ""
+            break
+    BOARD_STATE[piece] = pos
+
 while running:
     # Get events
     for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_x, mouse_y = event.pos
+            if MOUSE_STATE == "":
+                for p in BOARD_STATE:
+                    if BOARD_STATE[p] != "":
+                        pos = POS_TBL[BOARD_STATE[p]]
+                        if math.hypot(mouse_x - pos[0], mouse_y - pos[1]) <= piece_width // 2:
+                            MOUSE_STATE = p
+                            break
+            else:
+                for pos_name in POS_TBL:
+                    pos = POS_TBL[pos_name]
+                    if math.hypot(mouse_x - pos[0], mouse_y - pos[1]) <= piece_width // 2:
+                        move_piece(MOUSE_STATE, pos_name)
+                        MOUSE_STATE = ""
+                        break
+        
         if event.type == pygame.QUIT:
             running = False
 
