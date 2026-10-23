@@ -3,7 +3,9 @@ import math
 
 # Constants
 SQ_WIDTH = 50
-UI_WIDTH = 100
+UI_WIDTH = 250
+BOARD_WIDTH = SQ_WIDTH * 10 + 9
+BOARD_HEIGHT = SQ_WIDTH * 11 + 10
 
 ROW = ["J", "I", "H", "G", "F", "E", "D", "C", "B", "A"]
 COL = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -11,8 +13,17 @@ POS_TBL = {}
 for r in range(10):
     for c in range(9):
         POS_TBL[ROW[r]+COL[c]] = (SQ_WIDTH * (c+1) + c, SQ_WIDTH * (r+1) + r)
+P_BTN = (BOARD_WIDTH + UI_WIDTH // 2 - SQ_WIDTH // 2, SQ_WIDTH * 4.5, SQ_WIDTH, SQ_WIDTH)
+R_BTN = (BOARD_WIDTH + UI_WIDTH // 2 - SQ_WIDTH // 2, SQ_WIDTH * 7  , SQ_WIDTH, SQ_WIDTH)
+S_BTN = (BOARD_WIDTH + UI_WIDTH // 2 - SQ_WIDTH // 2, SQ_WIDTH * 9.5, SQ_WIDTH, SQ_WIDTH)
 
 # States
+GAME_STATE = {
+    "turn"   : "B",  # Which color's turn
+    "side"   : "B",  # Which color's side of board is bottom
+    "player" : "B"   # Which color the player is
+}
+
 BOARD_STATE = {
     "RR1" : "J1",  # Red Chariot (Rook) 1
     "RH1" : "J2",  # Red Horse 1
@@ -59,10 +70,12 @@ MOUSE_STATE = ""  # empty string : IDLE, non-empty string: SELECT
 CLR_GameBg  = (255, 255, 255)
 CLR_BoardBg = (206,  92,   0)
 CLR_BoardSq = (252, 175,  62)
+CLR_Piece   = (250, 214, 160)
 CLR_Outline = (  0,   0,   0)
 
 # Pygame Setup
 pygame.init()
+font = pygame.font.Font(None, SQ_WIDTH)
 screen = pygame.display.set_mode((SQ_WIDTH * 10 + 9 + UI_WIDTH, SQ_WIDTH * 11 + 10))
 clock = pygame.time.Clock()
 running = True
@@ -95,14 +108,20 @@ def render_board():
     # Board Outline
     pygame.draw.rect(screen, CLR_Outline, (SQ_WIDTH, SQ_WIDTH, SQ_WIDTH * 8 + 9, SQ_WIDTH * 9 + 10))
 
-    # Grid
-    for r in ["J", "I", "H", "G", "E", "D", "C", "B"]:
-        for c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
-            pos = POS_TBL[r+c]
-            pygame.draw.rect(screen, CLR_BoardSq, (pos[0]+1, pos[1]+1, SQ_WIDTH, SQ_WIDTH))
-    
-    # River
-    pygame.draw.rect(screen, CLR_BoardSq, (POS_TBL["F1"][0]+1, POS_TBL["F1"][1]+1, SQ_WIDTH * 8 + 7, SQ_WIDTH))
+    if GAME_STATE["side"] == "B":
+        # Black Grid and River
+        for r in ["J", "I", "H", "G", "E", "D", "C", "B"]:
+            for c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+                pos = POS_TBL[r+c]
+                pygame.draw.rect(screen, CLR_BoardSq, (pos[0]+1, pos[1]+1, SQ_WIDTH, SQ_WIDTH))
+        pygame.draw.rect(screen, CLR_BoardSq, (POS_TBL["F1"][0]+1, POS_TBL["F1"][1]+1, SQ_WIDTH * 8 + 7, SQ_WIDTH))
+    else:
+        # Red Grid and River
+        for r in ["A", "B", "C", "D", "F", "G", "H", "I"]:
+            for c in ["9", "8", "7", "6", "5", "4", "3", "2"]:
+                pos = POS_TBL[r+c]
+                pygame.draw.rect(screen, CLR_BoardSq, (pos[0]+1, pos[1]+1, SQ_WIDTH, SQ_WIDTH))
+        pygame.draw.rect(screen, CLR_BoardSq, (POS_TBL["E9"][0]+1, POS_TBL["E9"][1]+1, SQ_WIDTH * 8 + 7, SQ_WIDTH))
 
     # Palace
     for pos in [[POS_TBL["J4"], POS_TBL["H6"]], [POS_TBL["J6"], POS_TBL["H4"]], 
@@ -125,12 +144,33 @@ def render_board():
             pygame.draw.line(screen, CLR_Outline, (pos[0] + x, pos[1] + y), (pos[0] + y, pos[1] + y), width=1)
             pygame.draw.line(screen, CLR_Outline, (pos[0] + y, pos[1] + x), (pos[0] + y, pos[1] + y), width=1)
 
+def render_ui():
+    def render_text(text, loc):
+        text_surface = font.render(text, True, "Black")
+        text_rect = text_surface.get_rect()
+        text_rect.center = (loc[0], loc[1])
+        screen.blit(text_surface, text_rect)
+
+    pygame.draw.rect(screen, CLR_BoardSq, (BOARD_WIDTH, 0, UI_WIDTH, BOARD_HEIGHT))
+    pygame.draw.line(screen, CLR_Outline, (BOARD_WIDTH, 0), (BOARD_WIDTH, BOARD_HEIGHT), width=1)
+    render_text("Player Side", (BOARD_WIDTH + UI_WIDTH // 2, SQ_WIDTH * 4))
+    pygame.draw.rect(screen, CLR_Outline, P_BTN)
+    pygame.draw.rect(screen, CLR_Piece, (P_BTN[0]+1, P_BTN[1]+1, P_BTN[2]-2, P_BTN[3]-2))
+    render_text("Reset Game", (BOARD_WIDTH + UI_WIDTH // 2, SQ_WIDTH * 6.5))
+    pygame.draw.rect(screen, CLR_Outline, R_BTN)
+    pygame.draw.rect(screen, CLR_Piece, (R_BTN[0]+1, R_BTN[1]+1, R_BTN[2]-2, R_BTN[3]-2))
+    render_text("Flip Board", (BOARD_WIDTH + UI_WIDTH // 2, SQ_WIDTH * 9))
+    pygame.draw.rect(screen, CLR_Outline, S_BTN)
+    pygame.draw.rect(screen, CLR_Piece, (S_BTN[0]+1, S_BTN[1]+1, S_BTN[2]-2, S_BTN[3]-2))
+
 # Renders all pieces based on board state
 def render_pieces():
     for piece in BOARD_STATE:
         pos_key = BOARD_STATE[piece]
         if pos_key != "":
             pos = POS_TBL[pos_key]
+            if piece == MOUSE_STATE:
+                pygame.draw.ellipse(screen, CLR_Outline, (pos[0] - piece_width // 2 - 1, pos[1] - piece_width // 2 - 1, piece_width + 2, piece_width + 2))
             pygame.draw.ellipse(screen, CLR_Outline, (pos[0] - piece_width // 2, pos[1] - piece_width // 2, piece_width, piece_width))
             screen.blit(
                 pygame.transform.smoothscale(globals()[piece[0:2] + "_PNG"], (piece_width - 2, piece_width - 2)), 
@@ -144,12 +184,30 @@ def move_piece(piece, pos):
             break
     BOARD_STATE[piece] = pos
 
+def swap_sides():
+    if GAME_STATE["side"] == "B":
+        for r in range(10):
+            for c in range(9):
+                POS_TBL[ROW[r]+COL[c]] = (SQ_WIDTH * (9 - c) + 8 - c, SQ_WIDTH * (10 - r) + 9 - r)
+        GAME_STATE["side"] = "R"
+    else:
+        for r in range(10):
+            for c in range(9):
+                POS_TBL[ROW[r]+COL[c]] = (SQ_WIDTH * (c+1) + c, SQ_WIDTH * (r+1) + r)
+        GAME_STATE["side"] = "B"
+
 while running:
     # Get events
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_x, mouse_y = event.pos
-            if MOUSE_STATE == "":
+            if P_BTN[0] <= mouse_x <= P_BTN[0] + P_BTN[2] and P_BTN[1] <= mouse_y <= P_BTN[1] + P_BTN[3]:
+                print(1)
+            elif R_BTN[0] <= mouse_x <= R_BTN[0] + R_BTN[2] and R_BTN[1] <= mouse_y <= R_BTN[1] + R_BTN[3]:
+                print(2)
+            elif S_BTN[0] <= mouse_x <= S_BTN[0] + S_BTN[2] and S_BTN[1] <= mouse_y <= S_BTN[1] + S_BTN[3]:
+                swap_sides()
+            elif MOUSE_STATE == "":
                 for p in BOARD_STATE:
                     if BOARD_STATE[p] != "":
                         pos = POS_TBL[BOARD_STATE[p]]
@@ -161,8 +219,8 @@ while running:
                     pos = POS_TBL[pos_name]
                     if math.hypot(mouse_x - pos[0], mouse_y - pos[1]) <= piece_width // 2:
                         move_piece(MOUSE_STATE, pos_name)
-                        MOUSE_STATE = ""
                         break
+                MOUSE_STATE = ""
         
         if event.type == pygame.QUIT:
             running = False
@@ -170,6 +228,7 @@ while running:
     # Render screen
     screen.fill(CLR_GameBg)
     render_board()
+    render_ui()
     render_pieces()
 
     # Refresh screen
